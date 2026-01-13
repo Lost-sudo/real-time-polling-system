@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Poll {
+  id          String   @id @default(uuid())
+  question    String
+  description String?
+  createdBy   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  options     Option[]
+  votes       Vote[]
+  
+  @@map("polls")
+}
+
+model Option {
+  id        String   @id @default(uuid())
+  text      String
+  pollId    String
+  voteCount Int      @default(0)
+  createdAt DateTime @default(now())
+  
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes     Vote[]
+  
+  @@index([pollId])
+  @@map("options")
+}
+
+model Vote {
+  id         String   @id @default(uuid())
+  pollId     String
+  optionId   String
+  voterIdentifier String  // IP address or session UUID
+  createdAt  DateTime @default(now())
+  
+  poll       Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option     Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  
+  @@unique([pollId, voterIdentifier])
+  @@index([pollId])
+  @@index([optionId])
+  @@map("votes")
+}
