@@ -8,8 +8,8 @@ export const createPollSchema = z.object({
 });
 
 export const castVoteSchema = z.object({
-    pollId: z.string().uuid(),
-    optionId: z.string().uuid(),
+    pollId: z.string(),
+    optionId: z.string(),
 });
 
 export type CreatePollInput = z.infer<typeof createPollSchema>;

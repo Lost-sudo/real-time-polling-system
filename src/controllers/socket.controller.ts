@@ -54,7 +54,7 @@ export class SocketController {
             if (!result.success) {
                 socket.emit("vote_error", {
                     message: result.alreadyVoted
-                        ? "You have already voted"
+                        ? "You have already voted in this poll"
                         : "Failed to cast vote",
                 });
                 return;
@@ -68,7 +68,7 @@ export class SocketController {
 
             socket.emit("vote_success", {
                 pollId: result.pollId,
-                optionsId: result.optionId,
+                optionId: result.optionId,
                 options: result.updatedOptions,
             });
 
@@ -103,7 +103,7 @@ export class SocketController {
     private getVoterIdentifier(socket: Socket): string {
         return (
             socket.handshake.auth.sessionId ||
-            (socket.handshake.auth.headers["x-forwarded-for"] as string) ||
+            (socket.handshake.headers["x-forwarded-for"] as string) ||
             socket.handshake.address ||
             socket.id
         );
