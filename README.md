@@ -437,6 +437,7 @@ The test suite includes:
 - ✅ Emit vote updates to poll room
 - ✅ Handle errors and emit error events
 - ✅ Manage room connections
+- ✅ Handle leave poll events
 
 ### Test Configuration
 

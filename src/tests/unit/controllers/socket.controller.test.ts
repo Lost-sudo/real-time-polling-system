@@ -233,4 +233,14 @@ describe("SocketController", () => {
             );
         });
     });
+
+    describe("handleLeavePoll", () => {
+        it("should leave poll room", () => {
+            const pollId = "poll-123";
+
+            socketController.handleLeavePoll(mockSocket as Socket, pollId);
+
+            expect(mockSocket.leave).toHaveBeenCalledWith(`poll:${pollId}`);
+        });
+    });
 });
