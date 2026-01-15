@@ -184,4 +184,66 @@ describe("Voting Integration Tests", () => {
             expect(votes).toHaveLength(1);
         });
     });
+
+    describe("Vote Distribution", () => {
+        it("should correctly distribute votes across options", async () => {
+            // Cast votes for different options
+            await pollService.castVote(
+                {
+                    pollId: testPollId,
+                    optionId: testOptionsId[0],
+                },
+                "voter-1"
+            );
+            await pollService.castVote(
+                {
+                    pollId: testPollId,
+                    optionId: testOptionsId[0],
+                },
+                "voter-2"
+            );
+            await pollService.castVote(
+                {
+                    pollId: testPollId,
+                    optionId: testOptionsId[1],
+                },
+                "voter-3"
+            );
+            await pollService.castVote(
+                {
+                    pollId: testPollId,
+                    optionId: testOptionsId[1],
+                },
+                "voter-4"
+            );
+            await pollService.castVote(
+                {
+                    pollId: testPollId,
+                    optionId: testOptionsId[2],
+                },
+                "voter-5"
+            );
+            await pollService.castVote(
+                {
+                    pollId: testPollId,
+                    optionId: testOptionsId[2],
+                },
+                "voter-6"
+            );
+
+            // Get poll results
+            const poll = await pollService.getPollById(testPollId);
+
+            expect(poll?.options[0].voteCount).toBe(2);
+            expect(poll?.options[1].voteCount).toBe(2);
+            expect(poll?.options[2].voteCount).toBe(2);
+
+            // Total votes
+            const totalVotes = poll?.options.reduce(
+                (total, option) => total + option.voteCount,
+                0
+            );
+            expect(totalVotes).toBe(6);
+        });
+    });
 });
