@@ -73,16 +73,7 @@ export class PollService {
         data: CastVoteInput,
         voterIdentifier: string
     ): Promise<VoteResult> {
-        const existingVote = await this.prisma.vote.findUnique({
-            where: {
-                pollId_voterIdentifier: {
-                    pollId: data.pollId,
-                    voterIdentifier,
-                },
-            },
-        });
-
-        if (existingVote) {
+        if (await this.hasUserVoted(data.pollId, voterIdentifier)) {
             const options = await this.getOptionsByPollId(data.pollId);
             return {
                 success: false,
