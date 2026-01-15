@@ -7,8 +7,10 @@
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test:unit": "jest tests/unit",
-    "test:unit:watch": "jest tests/unit --watch",
+    "test:unit": "jest --config jest.config.js",
+    "test:unit:watch": "jest --config jest.config.js --watch",
+    "test:integration": "jest --config jest.integration.config.js",
+    "test:integration:watch": "jest --config jest.integration.config.js --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"

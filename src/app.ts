@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { createPollRoutes } from "./routes/poll.routes";
 import { PrismaClient } from "./generated/prisma/client";
+import { errorHandler } from "./middleware/error.middleware";
 
 export function createApp(prisma: PrismaClient): Application {
     const app = express();
@@ -27,6 +28,9 @@ export function createApp(prisma: PrismaClient): Application {
     app.get("/health", (_req, res) => {
         res.json({ status: "ok", timestamp: new Date().toISOString() });
     });
+
+    // Error handler
+    app.use(errorHandler);
 
     return app;
 }
