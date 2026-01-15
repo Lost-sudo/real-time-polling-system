@@ -246,4 +246,26 @@ describe("Voting Integration Tests", () => {
             expect(totalVotes).toBe(6);
         });
     });
+
+    describe("Edge Cases", () => {
+        it("should reject vote for non-existent poll", async () => {
+            const fakeId = "00000000-0000-0000-0000-000000000000";
+            await expect(
+                pollService.castVote(
+                    { pollId: fakeId, optionId: testOptionsId[0] },
+                    "voter-1"
+                )
+            ).rejects.toThrow();
+        });
+
+        it("should reject vote for non-existent option", async () => {
+            const fakeId = "00000000-0000-0000-0000-000000000000";
+            await expect(
+                pollService.castVote(
+                    { pollId: testPollId, optionId: fakeId },
+                    "voter-1"
+                )
+            ).rejects.toThrow();
+        });
+    });
 });
