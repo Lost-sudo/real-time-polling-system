@@ -134,4 +134,86 @@ describe("Poll API Integration Tests", () => {
             expect(response.body.error).toBe("Poll not found");
         });
     });
+
+    describe("GET /api/polls", () => {
+        it("should return all active polls", async () => {
+            // Create multiple polls
+            await supertest(app)
+                .post("/api/polls")
+                .send({
+                    question: "Poll 1?",
+                    options: ["A", "B", "C", "D"],
+                })
+                .expect(201);
+
+            await supertest(app)
+                .post("/api/polls")
+                .send({
+                    question: "Poll 2?",
+                    options: ["A", "B", "C", "D"],
+                })
+                .expect(201);
+
+            await supertest(app)
+                .post("/api/polls")
+                .send({
+                    question: "Poll 3?",
+                    options: ["A", "B", "C", "D"],
+                })
+                .expect(201);
+
+            const response = await supertest(app).get("/api/polls").expect(200);
+
+            expect(response.body.success).toBe(true);
+            expect(response.body.data).toHaveLength(3);
+        });
+
+        it("should return closed polls", async () => {
+            // Create poll
+            const createResponse = await supertest(app)
+                .post("/api/polls")
+                .send({
+                    question: "Active poll?",
+                    options: ["Yes", "No"],
+                });
+
+            const pollId = createResponse.body.data.id;
+
+            // Close poll
+            await supertest(app)
+                .patch(`/api/polls/${pollId}/close`)
+                .expect(200);
+
+            const response = await supertest(app).get("/api/polls").expect(200);
+
+            expect(response.body.data).toHaveLength(0);
+        });
+    });
+
+    describe("PATCH /api/polls/:pollId/close - Close Poll", () => {
+        it("should close an active poll", async () => {
+            // Create poll
+            const createResponse = await supertest(app)
+                .post("/api/polls")
+                .send({
+                    question: "To be closed?",
+                    options: ["Yes", "No"],
+                })
+                .expect(201);
+
+            const pollId = createResponse.body.data.id;
+
+            // Close poll
+            const response = await supertest(app)
+                .patch(`/api/polls/${pollId}/close`)
+                .expect(200);
+
+            expect(response.body.success).toBe(true);
+
+            const pollInDb = await prisma.poll.findUnique({
+                where: { id: pollId },
+            });
+            expect(pollInDb?.isActive).toBe(false);
+        });
+    });
 });
