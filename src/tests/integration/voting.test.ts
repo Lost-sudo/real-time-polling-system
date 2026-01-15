@@ -116,4 +116,72 @@ describe("Voting Integration Tests", () => {
             expect(hasVotedAfter).toBe(true);
         });
     });
+
+    describe("Concurrent Voting (Race Condition Prevention)", () => {
+        it("should handle concurrent votes atomically", async () => {
+            const numVoters = 50;
+            const voterIdentifier = Array.from(
+                { length: numVoters },
+                (_, i) => `voter-${i}`
+            );
+
+            // Simulate concurrent votes on same option
+            const votesPromises = voterIdentifier.map((voterId) =>
+                pollService.castVote(
+                    {
+                        pollId: testPollId,
+                        optionId: testOptionsId[0],
+                    },
+                    voterId
+                )
+            );
+
+            await Promise.all(votesPromises);
+
+            // Verify exact vote count
+            const option = await prisma.option.findUnique({
+                where: { id: testOptionsId[0] },
+            });
+
+            expect(option?.voteCount).toBe(numVoters);
+
+            // Verify all votes recorded
+            const votes = await prisma.vote.count({
+                where: { optionId: testOptionsId[0] },
+            });
+
+            expect(votes).toBe(numVoters);
+        });
+
+        it("should prevent race condition with same user voting twice", async () => {
+            const voterIdentifier = "race-voter";
+
+            // Try to vote twice simultaneously
+            const votesPromises = [
+                pollService.castVote(
+                    { pollId: testPollId, optionId: testOptionsId[0] },
+                    voterIdentifier
+                ),
+                pollService.castVote(
+                    { pollId: testPollId, optionId: testOptionsId[0] },
+                    voterIdentifier
+                ),
+            ];
+
+            const results = await Promise.allSettled(votesPromises);
+
+            const successCount = results.filter(
+                (result) => result.status === "fulfilled"
+            ).length;
+
+            expect(successCount).toBe(1);
+
+            // Verify only one vote in database
+            const votes = await prisma.vote.findMany({
+                where: { voterIdentifier },
+            });
+
+            expect(votes).toHaveLength(1);
+        });
+    });
 });
